@@ -32,7 +32,7 @@ paths:
       operationId: getCityData
       tags: [city]
       summary: Fetch OSM city data
-      description: Fetches buildings, roads, and POIs from OpenStreetMap for a given location
+      description: Fetches buildings, roads, and POIs from OpenStreetMap for a given location. Results are cached server-side for 10 minutes.
       parameters:
         - name: lat
           in: query
@@ -52,7 +52,7 @@ paths:
           schema:
             type: number
             default: 1000
-          description: Search radius in meters
+          description: Search radius in meters (max 5000)
       responses:
         "200":
           description: City data
@@ -71,8 +71,8 @@ paths:
     get:
       operationId: getElevation
       tags: [city]
-      summary: Fetch elevation data
-      description: Returns elevation in meters for a given coordinate
+      summary: Fetch terrain elevation grid
+      description: Returns a 3x3 grid of elevation samples (9 points) surrounding the city center for terrain mesh generation. Cached for 24 hours.
       parameters:
         - name: lat
           in: query
@@ -86,7 +86,7 @@ paths:
             type: number
       responses:
         "200":
-          description: Elevation data
+          description: Elevation data with terrain grid
           content:
             application/json:
               schema:
@@ -97,7 +97,7 @@ paths:
       operationId: getWeather
       tags: [city]
       summary: Fetch current weather
-      description: Returns current weather conditions for a given coordinate using open-meteo
+      description: Returns current weather conditions using Open-Meteo. Cached for 5 minutes.
       parameters:
         - name: lat
           in: query
@@ -231,6 +231,12 @@ components:
           type: boolean
         fetch_time_ms:
           type: number
+        cache_hit:
+          type: boolean
+          description: True if this response was served from server-side cache
+        data_source:
+          type: string
+          description: "'live' | 'cache' | 'stale' — origin of the returned data"
       required:
         - city_name
         - lat
@@ -244,9 +250,12 @@ components:
         - pois
         - unity_ready
         - fetch_time_ms
+        - cache_hit
+        - data_source
 
-    ElevationData:
+    ElevationGridPoint:
       type: object
+      description: A single elevation sample in the terrain grid
       properties:
         lat:
           type: number
@@ -258,6 +267,27 @@ components:
         - lat
         - lon
         - elevation_m
+
+    ElevationData:
+      type: object
+      properties:
+        lat:
+          type: number
+        lon:
+          type: number
+        elevation_m:
+          type: number
+          description: Center point elevation in meters
+        grid_points:
+          type: array
+          description: 3x3 grid of elevation samples for terrain mesh generation (NW→SE, row-major)
+          items:
+            $ref: "#/components/schemas/ElevationGridPoint"
+      required:
+        - lat
+        - lon
+        - elevation_m
+        - grid_points
 
     WeatherData:
       type: object
