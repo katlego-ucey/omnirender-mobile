@@ -1,0 +1,286 @@
+openapi: 3.1.0
+info:
+  # Do not change the title, if the title changes, the import paths will be broken
+  title: Api
+  version: 0.1.0
+  description: OmniRender Mobile API — real-world city data pipeline
+servers:
+  - url: /api
+    description: Base API path
+tags:
+  - name: health
+    description: Health operations
+  - name: city
+    description: City data operations
+paths:
+  /healthz:
+    get:
+      operationId: healthCheck
+      tags: [health]
+      summary: Health check
+      description: Returns server health status
+      responses:
+        "200":
+          description: Healthy
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HealthStatus"
+
+  /city-data:
+    get:
+      operationId: getCityData
+      tags: [city]
+      summary: Fetch OSM city data
+      description: Fetches buildings, roads, and POIs from OpenStreetMap for a given location
+      parameters:
+        - name: lat
+          in: query
+          required: true
+          schema:
+            type: number
+          description: Latitude
+        - name: lon
+          in: query
+          required: true
+          schema:
+            type: number
+          description: Longitude
+        - name: radius
+          in: query
+          required: false
+          schema:
+            type: number
+            default: 1000
+          description: Search radius in meters
+      responses:
+        "200":
+          description: City data
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CityData"
+        "400":
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /elevation:
+    get:
+      operationId: getElevation
+      tags: [city]
+      summary: Fetch elevation data
+      description: Returns elevation in meters for a given coordinate
+      parameters:
+        - name: lat
+          in: query
+          required: true
+          schema:
+            type: number
+        - name: lon
+          in: query
+          required: true
+          schema:
+            type: number
+      responses:
+        "200":
+          description: Elevation data
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ElevationData"
+
+  /weather:
+    get:
+      operationId: getWeather
+      tags: [city]
+      summary: Fetch current weather
+      description: Returns current weather conditions for a given coordinate using open-meteo
+      parameters:
+        - name: lat
+          in: query
+          required: true
+          schema:
+            type: number
+        - name: lon
+          in: query
+          required: true
+          schema:
+            type: number
+      responses:
+        "200":
+          description: Weather data
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/WeatherData"
+
+components:
+  schemas:
+    HealthStatus:
+      type: object
+      properties:
+        status:
+          type: string
+      required:
+        - status
+
+    ErrorResponse:
+      type: object
+      properties:
+        error:
+          type: string
+      required:
+        - error
+
+    Building:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+          nullable: true
+        lat:
+          type: number
+        lon:
+          type: number
+        height:
+          type: number
+          nullable: true
+        levels:
+          type: number
+          nullable: true
+        type:
+          type: string
+          nullable: true
+      required:
+        - id
+        - lat
+        - lon
+
+    Road:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+          nullable: true
+        type:
+          type: string
+        length:
+          type: number
+          nullable: true
+      required:
+        - id
+        - type
+
+    PointOfInterest:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+          nullable: true
+        category:
+          type: string
+        lat:
+          type: number
+        lon:
+          type: number
+      required:
+        - id
+        - category
+        - lat
+        - lon
+
+    CityData:
+      type: object
+      properties:
+        city_name:
+          type: string
+        lat:
+          type: number
+        lon:
+          type: number
+        radius:
+          type: number
+        buildings_count:
+          type: number
+        roads_count:
+          type: number
+        pois_count:
+          type: number
+        buildings:
+          type: array
+          items:
+            $ref: "#/components/schemas/Building"
+        roads:
+          type: array
+          items:
+            $ref: "#/components/schemas/Road"
+        pois:
+          type: array
+          items:
+            $ref: "#/components/schemas/PointOfInterest"
+        unity_ready:
+          type: boolean
+        fetch_time_ms:
+          type: number
+      required:
+        - city_name
+        - lat
+        - lon
+        - radius
+        - buildings_count
+        - roads_count
+        - pois_count
+        - buildings
+        - roads
+        - pois
+        - unity_ready
+        - fetch_time_ms
+
+    ElevationData:
+      type: object
+      properties:
+        lat:
+          type: number
+        lon:
+          type: number
+        elevation_m:
+          type: number
+      required:
+        - lat
+        - lon
+        - elevation_m
+
+    WeatherData:
+      type: object
+      properties:
+        lat:
+          type: number
+        lon:
+          type: number
+        temperature_c:
+          type: number
+        condition:
+          type: string
+        wind_speed_kmh:
+          type: number
+        is_day:
+          type: boolean
+        weather_code:
+          type: number
+      required:
+        - lat
+        - lon
+        - temperature_c
+        - condition
+        - wind_speed_kmh
+        - is_day
+        - weather_code
