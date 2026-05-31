@@ -22,4 +22,8 @@ export interface CityData {
   pois: PointOfInterest[];
   unity_ready: boolean;
   fetch_time_ms: number;
+  /** True if this response was served from server-side cache */
+  cache_hit: boolean;
+  /** 'live' | 'cache' | 'stale' — origin of the returned data */
+  data_source: string;
 }

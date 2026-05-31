@@ -9,6 +9,7 @@
 export * from './building';
 export * from './cityData';
 export * from './elevationData';
+export * from './elevationGridPoint';
 export * from './errorResponse';
 export * from './getCityDataParams';
 export * from './getElevationParams';

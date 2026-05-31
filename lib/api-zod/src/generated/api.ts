@@ -18,7 +18,7 @@ export const HealthCheckResponse = zod.object({
 
 
 /**
- * Fetches buildings, roads, and POIs from OpenStreetMap for a given location
+ * Fetches buildings, roads, and POIs from OpenStreetMap for a given location. Results are cached server-side for 10 minutes.
  * @summary Fetch OSM city data
  */
 export const getCityDataQueryRadiusDefault = 1000;
@@ -26,7 +26,7 @@ export const getCityDataQueryRadiusDefault = 1000;
 export const GetCityDataQueryParams = zod.object({
   "lat": zod.coerce.number().describe('Latitude'),
   "lon": zod.coerce.number().describe('Longitude'),
-  "radius": zod.coerce.number().default(getCityDataQueryRadiusDefault).describe('Search radius in meters')
+  "radius": zod.coerce.number().default(getCityDataQueryRadiusDefault).describe('Search radius in meters (max 5000)')
 })
 
 export const GetCityDataResponse = zod.object({
@@ -60,13 +60,15 @@ export const GetCityDataResponse = zod.object({
   "lon": zod.number()
 })),
   "unity_ready": zod.boolean(),
-  "fetch_time_ms": zod.number()
+  "fetch_time_ms": zod.number(),
+  "cache_hit": zod.boolean().describe('True if this response was served from server-side cache'),
+  "data_source": zod.string().describe('\'live\' | \'cache\' | \'stale\' — origin of the returned data')
 })
 
 
 /**
- * Returns elevation in meters for a given coordinate
- * @summary Fetch elevation data
+ * Returns a 3x3 grid of elevation samples (9 points) surrounding the city center for terrain mesh generation. Cached for 24 hours.
+ * @summary Fetch terrain elevation grid
  */
 export const GetElevationQueryParams = zod.object({
   "lat": zod.coerce.number(),
@@ -76,12 +78,17 @@ export const GetElevationQueryParams = zod.object({
 export const GetElevationResponse = zod.object({
   "lat": zod.number(),
   "lon": zod.number(),
+  "elevation_m": zod.number().describe('Center point elevation in meters'),
+  "grid_points": zod.array(zod.object({
+  "lat": zod.number(),
+  "lon": zod.number(),
   "elevation_m": zod.number()
+}).describe('A single elevation sample in the terrain grid')).describe('3x3 grid of elevation samples for terrain mesh generation (NW→SE, row-major)')
 })
 
 
 /**
- * Returns current weather conditions for a given coordinate using open-meteo
+ * Returns current weather conditions using Open-Meteo. Cached for 5 minutes.
  * @summary Fetch current weather
  */
 export const GetWeatherQueryParams = zod.object({

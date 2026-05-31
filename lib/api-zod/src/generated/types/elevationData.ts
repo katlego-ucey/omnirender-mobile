@@ -5,9 +5,13 @@
  * OmniRender Mobile API — real-world city data pipeline
  * OpenAPI spec version: 0.1.0
  */
+import type { ElevationGridPoint } from './elevationGridPoint';
 
 export interface ElevationData {
   lat: number;
   lon: number;
+  /** Center point elevation in meters */
   elevation_m: number;
+  /** 3x3 grid of elevation samples for terrain mesh generation (NW→SE, row-major) */
+  grid_points: ElevationGridPoint[];
 }

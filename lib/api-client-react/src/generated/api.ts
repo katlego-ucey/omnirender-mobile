@@ -132,7 +132,7 @@ export const getGetCityDataUrl = (params: GetCityDataParams,) => {
 }
 
 /**
- * Fetches buildings, roads, and POIs from OpenStreetMap for a given location
+ * Fetches buildings, roads, and POIs from OpenStreetMap for a given location. Results are cached server-side for 10 minutes.
  * @summary Fetch OSM city data
  */
 export const getCityData = async (params: GetCityDataParams, options?: RequestInit): Promise<CityData> => {
@@ -217,8 +217,8 @@ export const getGetElevationUrl = (params: GetElevationParams,) => {
 }
 
 /**
- * Returns elevation in meters for a given coordinate
- * @summary Fetch elevation data
+ * Returns a 3x3 grid of elevation samples (9 points) surrounding the city center for terrain mesh generation. Cached for 24 hours.
+ * @summary Fetch terrain elevation grid
  */
 export const getElevation = async (params: GetElevationParams, options?: RequestInit): Promise<ElevationData> => {
 
@@ -265,7 +265,7 @@ export type GetElevationQueryError = ErrorType<unknown>
 
 
 /**
- * @summary Fetch elevation data
+ * @summary Fetch terrain elevation grid
  */
 
 export function useGetElevation<TData = Awaited<ReturnType<typeof getElevation>>, TError = ErrorType<unknown>>(
@@ -302,7 +302,7 @@ export const getGetWeatherUrl = (params: GetWeatherParams,) => {
 }
 
 /**
- * Returns current weather conditions for a given coordinate using open-meteo
+ * Returns current weather conditions using Open-Meteo. Cached for 5 minutes.
  * @summary Fetch current weather
  */
 export const getWeather = async (params: GetWeatherParams, options?: RequestInit): Promise<WeatherData> => {

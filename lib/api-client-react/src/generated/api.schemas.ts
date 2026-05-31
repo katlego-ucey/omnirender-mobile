@@ -51,12 +51,28 @@ export interface CityData {
   pois: PointOfInterest[];
   unity_ready: boolean;
   fetch_time_ms: number;
+  /** True if this response was served from server-side cache */
+  cache_hit: boolean;
+  /** 'live' | 'cache' | 'stale' — origin of the returned data */
+  data_source: string;
+}
+
+/**
+ * A single elevation sample in the terrain grid
+ */
+export interface ElevationGridPoint {
+  lat: number;
+  lon: number;
+  elevation_m: number;
 }
 
 export interface ElevationData {
   lat: number;
   lon: number;
+  /** Center point elevation in meters */
   elevation_m: number;
+  /** 3x3 grid of elevation samples for terrain mesh generation (NW→SE, row-major) */
+  grid_points: ElevationGridPoint[];
 }
 
 export interface WeatherData {
@@ -79,7 +95,7 @@ lat: number;
  */
 lon: number;
 /**
- * Search radius in meters
+ * Search radius in meters (max 5000)
  */
 radius?: number;
 };
